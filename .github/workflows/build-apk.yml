@@ -24,8 +24,41 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-
       - name: Extract game ZIP
+        run: |
+          mkdir -p game
+
+          ZIP_FILE=$(find . -maxdepth 1 -type f -name "*.zip" | head -n 1)
+
+          if [ -z "$ZIP_FILE" ]; then
+            echo "لم يتم العثور على ملف ZIP"
+            exit 1
+          fi
+
+          echo "الملف الرئيسي: $ZIP_FILE"
+
+          unzip -o "$ZIP_FILE" -d game
+
+          # فك ملفات ZIP الموجودة داخل ZIP
+          for i in 1 2 3 4 5; do
+            INNER_ZIPS=$(find game -type f -name "*.zip")
+
+            if [ -z "$INNER_ZIPS" ]; then
+              break
+            fi
+
+            echo "فك ملفات ZIP الداخلية..."
+
+            while IFS= read -r INNER; do
+              DIR=$(dirname "$INNER")
+              echo "فك: $INNER"
+              unzip -o "$INNER" -d "$DIR"
+              rm -f "$INNER"
+            done <<< "$INNER_ZIPS"
+          done
+
+          echo "محتويات اللعبة:"
+          find game -type f | head -200
         run: |
           mkdir -p game
           ZIP_FILE=$(find . -maxdepth 1 -type f -name "*.zip" | head -n 1)
