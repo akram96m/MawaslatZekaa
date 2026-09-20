@@ -37,22 +37,26 @@ jobs:
 
           echo "Using: $ZIP_FILE"
           unzip -o "$ZIP_FILE" -d game
-
-      - name: Find index.html
+      - name: Find HTML file
         run: |
-          INDEX=$(find game -type f -name "index.html" | head -n 1)
+          HTML=$(find game -type f \( -iname "*.html" -o -iname "*.htm" \) | head -n 1)
 
-          if [ -z "$INDEX" ]; then
-            echo "لم يتم العثور على index.html داخل ZIP"
+          if [ -z "$HTML" ]; then
+            echo "لم يتم العثور على أي ملف HTML داخل ZIP"
+            echo "محتويات ZIP:"
+            find game -type f | head -100
             exit 1
           fi
 
-          echo "Found: $INDEX"
+          echo "تم العثور على: $HTML"
+
+          ROOT=$(dirname "$HTML")
 
           mkdir -p www
-
-          ROOT=$(dirname "$INDEX")
           cp -r "$ROOT"/* www/
+
+          echo "محتويات www:"
+          find www -maxdepth 2 -type f | head -100
 
       - name: Create Capacitor project
         run: |
